@@ -1,0 +1,625 @@
+/* ===== ESTILOS GERAIS ===== */
+
+/* Define o estilo global da página */
+* {
+  /* Remove as margens padrão */
+  margin: 0;
+  /* Remove o espaçamento interno padrão */
+  padding: 0;
+  /* Inclui padding e border na largura total */
+  box-sizing: border-box;
+}
+
+/* Define o estilo do corpo da página */
+body {
+  /* Define a fonte padrão */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* Define a cor de fundo cinza claro */
+  background-color: #f5f5f5;
+  /* Define a cor do texto como cinza escuro */
+  color: #333;
+}
+
+/* ===== CONTAINER PRINCIPAL ===== */
+
+/* Container que centraliza o conteúdo da página */
+.container {
+  /* Define a largura máxima */
+  max-width: 500px;
+  /* Centraliza horizontalmente */
+  margin: 0 auto;
+  /* Define o espaçamento interno */
+  padding: 20px;
+}
+
+/* ===== HEADER DO PERFIL ===== */
+
+/* Container que envolve o botão de voltar e o título */
+.profile-header {
+  /* Exibe os itens em linha (flex) */
+  display: flex;
+  /* Alinha os itens verticalmente no centro */
+  align-items: center;
+  /* Define o espaço entre itens */
+  gap: 15px;
+  /* Define o espaço abaixo do header */
+  margin-bottom: 25px;
+}
+
+/* ===== BOTÃO VOLTAR ===== */
+
+/* Estilo do botão de voltar no topo */
+.btn-voltar {
+  /* Define a largura do botão em círculo */
+  width: 40px;
+  /* Define a altura do botão em círculo */
+  height: 40px;
+  /* Define o background cinza claro */
+  background-color: white;
+  /* Define uma borda cinza sutil */
+  border: 1px solid #ddd;
+  /* Remove as bordas agudas para criar um círculo */
+  border-radius: 50%;
+  /* Define o tamanho da fonte */
+  font-size: 18px;
+  /* Define a cor do texto cinza escuro */
+  color: #666;
+  /* Adiciona cursor de mão ao passar */
+  cursor: pointer;
+  /* Remove margens padrão */
+  margin: 0;
+  /* Transição suave para efeitos */
+  transition: all 0.3s ease;
+  /* Centraliza o conteúdo do botão */
+  display: flex;
+  /* Alinha o ícone horizontalmente no centro */
+  justify-content: center;
+  /* Alinha o ícone verticalmente no centro */
+  align-items: center;
+  /* Reduz o tamanho para acompanhar melhor o título */
+  flex-shrink: 0;
+}
+
+/* Efeito ao passar o mouse no botão voltar */
+.btn-voltar:hover {
+  /* Define o background mais escuro ao passar */
+  background-color: #e8e8e8;
+  /* Define uma borda mais visível ao passar */
+  border-color: #999;
+}
+
+/* ===== CONTAINER DO PERFIL ===== */
+
+/* Container que engloba o card do perfil */
+.profile-container {
+  /* Define o background branco */
+  background: white;
+  /* Adiciona sombra ao redor */
+  border-radius: 12px;
+  /* Remove bordas agudas */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* Define o espaçamento interno */
+  padding: 30px 25px;
+}
+
+/* ===== TÍTULO DO PERFIL ===== */
+
+/* Estilo do título "Meu Perfil" */
+.profile-title {
+  /* Define o tamanho da fonte */
+  font-size: 24px;
+  /* Define o peso da fonte como bold */
+  font-weight: bold;
+  /* Remove o espaço padrão abaixo */
+  margin: 0;
+  /* Define a cor do texto */
+  color: #2c3e50;
+}
+
+/* ===== FOTO DE PERFIL ===== */
+
+/* Container que envolve a foto e o botão de editar */
+.profile-photo-container {
+  /* Define a posição relativa para sobrepor elementos */
+  position: relative;
+  /* Centraliza os elementos filhos */
+  display: flex;
+  /* Alinha os itens no centro */
+  justify-content: center;
+  /* Define o espaço abaixo */
+  margin-bottom: 15px;
+}
+
+/* Estilo da imagem de perfil */
+.profile-photo {
+  /* Define a largura e altura como quadrado */
+  width: 150px;
+  height: 150px;
+  /* Remove as bordas agudas */
+  border-radius: 50%;
+  /* Define o estilo de borda */
+  border: 4px solid #e0e0e0;
+  /* Garante que a imagem preencha o espaço */
+  object-fit: cover;
+}
+
+/* Estilo do botão de editar foto (ícone de lápis) */
+.edit-photo-btn {
+  /* Define a posição absoluta para sobrepor */
+  position: absolute;
+  /* Define a posição no canto inferior direito */
+  bottom: 10px;
+  right: 10px;
+  /* Define as dimensões do botão */
+  width: 40px;
+  height: 40px;
+  /* Define o background azul */
+  background-color: #0066cc;
+  /* Define a cor do texto branca */
+  color: white;
+  /* Remove a borda padrão */
+  border: none;
+  /* Remove as bordas agudas */
+  border-radius: 50%;
+  /* Define o tamanho da fonte */
+  font-size: 18px;
+  /* Adiciona cursor de mão */
+  cursor: pointer;
+  /* Transição suave */
+  transition: all 0.3s ease;
+  /* Centraliza o ícone no botão */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Efeito ao passar o mouse no botão de editar */
+.edit-photo-btn:hover {
+  /* Aumenta o tamanho */
+  width: 45px;
+  height: 45px;
+  /* Aumenta a sombra */
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+}
+
+/* ===== TEXTO REMOVER FOTO ===== */
+
+/* Estilo do texto para remover a foto */
+.remove-photo-text {
+  /* Define a cor vermelha */
+  color: #e74c3c;
+  /* Centraliza o texto */
+  text-align: center;
+  /* Define o tamanho da fonte */
+  font-size: 14px;
+  /* Define o peso da fonte */
+  font-weight: 500;
+  /* Adiciona cursor de mão */
+  cursor: pointer;
+  /* Define o espaço abaixo */
+  margin-bottom: 25px;
+  /* Transição suave */
+  transition: all 0.3s ease;
+}
+
+/* Efeito ao passar o mouse no texto */
+.remove-photo-text:hover {
+  /* Reduz a opacidade */
+  opacity: 0.8;
+  /* Adiciona underline */
+  text-decoration: underline;
+}
+
+/* ===== FORMULÁRIO ===== */
+
+/* Estilo do formulário */
+.profile-form {
+  /* Define a largura total */
+  width: 100%;
+}
+
+/* ===== GRUPO DE FORM ===== */
+
+/* Estilo para cada campo do formulário */
+.form-group {
+  /* Define o espaço abaixo de cada grupo */
+  margin-bottom: 20px;
+  /* Exibe os itens em coluna */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilo das labels (Nome, Email, Telefone) */
+.form-group label {
+  /* Define o peso da fonte como bold */
+  font-weight: 630;
+  /* Define a cor do texto */
+  color: #2c3e50;
+  /* Define o tamanho da fonte */
+  font-size: 14px;
+  /* Define o espaço abaixo da label */
+  margin-bottom: 8px;
+}
+
+/* Estilo dos inputs (campos de texto) */
+.form-group input {
+  /* Define a altura */
+  padding: 12px;
+  /* Define a borda */
+  border: none;
+  /* Remove as bordas agudas */
+  border-radius: 6px;
+  /* Define o tamanho da fonte */
+  font-size: 14px;
+  /* Define a transição para foco */
+  transition: all 0.3s ease;
+  /* Define a cor de fundo */
+  background-color: white;
+}
+
+/* Efeito quando o input está focado (clicado) */
+.form-group input:focus {
+  /* Remove o outline padrão */
+  outline: none;
+  /* Define uma borda azul mais espessa */
+  border-color: #0066cc;
+  /* Define o background branco */
+  background-color: white;
+  /* Adiciona sombra ao redor */
+  box-shadow: 0 0 0 3px rgba(43, 43, 43, 0.26);
+}
+
+/* Input readonly (somente leitura) */
+.form-group input:read-only {
+  /* Define uma cor de fundo cinza claro */
+  background-color: #f5f5f5;
+  /* Define a cor do texto cinza */
+  color: #666;
+  /* Define o cursor como não-permitido */
+  cursor: not-allowed;
+  /* Define uma borda cinza */
+  border-color: #ddd;
+  /* Remove a seleção de texto */
+  user-select: none;
+  /* Remove a seleção de texto para navegadores webkit */
+  -webkit-user-select: none;
+  /* Remove a seleção de texto para Mozilla */
+  -moz-user-select: none;
+  /* Remove a seleção de texto para Microsoft */
+  -ms-user-select: none;
+  box-shadow: none;
+}
+
+/* Efeito ao passar o mouse em um input readonly */
+.form-group input:readonly:hover {
+  /* Define a borda em cinza */
+  border-color: #ddd;
+}
+
+/* ===== CONTAINER DE OPÇÕES ===== */
+
+/* Container que agrupa os botões de opções */
+.options-container {
+  /* Define o espaço abaixo */
+  margin-bottom: 25px;
+  /* Define a largura total */
+  width: 100%;
+}
+
+/* ===== BOTÕES DE OPÇÃO ===== */
+
+/* Estilo dos botões de opções (Alterar Senha e Preferências) */
+.option-btn {
+  /* Define a largura total */
+  width: 100%;
+  /* Define o espaçamento interno */
+  padding: 15px;
+  /* Define o espaço abaixo de cada botão */
+  margin-bottom: 12px;
+  /* Define o background branco */
+  background-color: white;
+  /* Define a borda cinza clara */
+  border: 1px solid #e0e0e0;
+  /* Remove as bordas agudas */
+  border-radius: 6px;
+  /* Define o tamanho da fonte */
+  font-size: 14px;
+  /* Define a cor do texto */
+  color: #2c3e50;
+  /* Define o peso da fonte */
+  font-weight: 600;
+  /* Adiciona cursor de mão */
+  cursor: pointer;
+  /* Transição suave */
+  transition: all 0.3s ease;
+  /* Exibe os itens em linha (flex) */
+  display: flex;
+  /* Distribui o espaço entre itens */
+  justify-content: space-between;
+  /* Alinha os itens verticalmente no centro */
+  align-items: center;
+  /* Define o espaço interno entre linhas */
+  gap: 10px;
+}
+
+/* Container do conteúdo do botão (título e descrição) */
+.option-content {
+  /* Exibe o conteúdo em coluna */
+  display: flex;
+  /* Organiza os itens verticalmente */
+  flex-direction: column;
+  /* Alinha o conteúdo à esquerda */
+  align-items: flex-start;
+  /* Define o espaço entre itens */
+  gap: 4px;
+}
+
+/* Estilo do título do botão */
+.option-title {
+  /* Define o tamanho da fonte */
+  font-size: 14px;
+  /* Define o peso da fonte bold */
+  font-weight: 600;
+  /* Define a cor do texto */
+  color: #2c3e50;
+}
+
+/* Estilo do texto descritivo embaixo do botão */
+.option-btn .testezin {
+  /* Define o tamanho da fonte menor para a descrição */
+  font-size: 12px;
+  /* Define a cor do texto cinza */
+  color: #999;
+  /* Remove a margem padrão */
+  margin: 0;
+  /* Remove o espaço abaixo */
+  padding: 0;
+}
+
+/* Efeito ao passar o mouse nos botões de opção */
+.option-btn:hover {
+  background-color: rgba(177, 177, 177, 0.116);
+}
+
+/* Efeito ao clicar nos botões de opção */
+.option-btn:active {
+  /* Reduz a opacidade */
+  opacity: 0.8;
+}
+
+/* Estilo da seta nos botões de opção */
+.arrow {
+  /* Define a cor da seta cinza */
+  color: #999;
+  /* Define o tamanho da fonte */
+  font-size: 16px;
+}
+
+/* ===== BOTÃO SALVAR ===== */
+
+/* Estilo do botão "Salvar Alterações" */
+.btn-salvar {
+  /* Define a largura total */
+  width: 100%;
+  /* Define o espaçamento interno */
+  padding: 15px;
+  /* Define o background azul */
+  background-color: #0066cc;
+  /* Define a cor do texto branca */
+  color: white;
+  /* Define o tamanho da fonte */
+  font-size: 16px;
+  /* Define o peso da fonte como bold */
+  font-weight: bold;
+  /* Remove a borda padrão */
+  border: none;
+  /* Remove as bordas agudas */
+  border-radius: 6px;
+  /* Adiciona cursor de mão */
+  cursor: pointer;
+  /* Transição suave */
+  transition: all 0.3s ease;
+}
+
+/* Efeito ao passar o mouse no botão salvar */
+.btn-salvar:hover {
+  /* Muda o background para azul mais escuro */
+  background-color: #0052a3;
+  /* Adiciona sombra */
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+/* Efeito ao clicar no botão salvar */
+.btn-salvar:active {
+  /* Reduz a opacidade */
+  opacity: 0.9;
+  /* Remove a sombra */
+  box-shadow: none;
+}
+
+/* ===== PREFERÊNCIAS E NOTIFICAÇÕES ===== */
+
+/* Container da lista de preferências */
+.preferences-list {
+  /* Define a largura total */
+  width: 100%;
+  /* Define o espaço abaixo */
+  margin-bottom: 25px;
+}
+
+/* Item individual de preferência */
+.preference-item {
+  /* Exibe os itens em linha (flex) */
+  display: flex;
+  /* Distribui o espaço entre itens */
+  justify-content: space-between;
+  /* Alinha os itens verticalmente no centro */
+  align-items: flex-start;
+  /* Define o espaçamento interno */
+  padding: 15px 0;
+  /* Define a borda inferior */
+  border-bottom: 1px solid #e8e8e8;
+  /* Define o espaço entre itens */
+  gap: 15px;
+}
+
+/* Ultimo item sem borda inferior */
+.preference-item:last-child {
+  /* Remove a borda inferior do último item */
+  border-bottom: none;
+}
+
+/* Container do conteúdo da preferência */
+.preference-content {
+  /* Define a largura para ocupar o espaço disponível */
+  flex: 1;
+}
+
+/* Título da preferência */
+.preference-title {
+  /* Define o tamanho da fonte */
+  font-size: 16px;
+  /* Define o peso da fonte bold */
+  font-weight: 600;
+  /* Define a cor do texto */
+  color: #2c3e50;
+  /* Remove margens padrão */
+  margin: 0 0 5px 0;
+}
+
+/* Descrição da preferência */
+.preference-description {
+  /* Define o tamanho da fonte */
+  font-size: 13px;
+  /* Define a cor do texto cinza */
+  color: #999;
+  /* Remove margens padrão */
+  margin: 0;
+  /* Define a altura da linha */
+  line-height: 1.4;
+}
+
+/* ===== TOGGLE SWITCH ===== */
+
+/* Container do toggle switch */
+.toggle-switch {
+  /* Remove o comportamento padrão */
+  display: flex;
+  /* Alinha o conteúdo */
+  align-items: center;
+  /* Define a posição relativa */
+  position: relative;
+  /* Define a largura */
+  width: 50px;
+  /* Define a altura */
+  height: 28px;
+  /* Reduz o tamanho para acompanhar */
+  flex-shrink: 0;
+}
+
+/* Input oculto do toggle */
+.toggle-input {
+  /* Oculta o input padrão */
+  display: none;
+}
+
+/* Slider do toggle */
+.toggle-slider {
+  /* Define a posição absoluta */
+  position: absolute;
+  /* Preenche todo o container */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Define a cor de fundo cinza */
+  background-color: #ccc;
+  /* Remove as bordas agudas */
+  border-radius: 34px;
+  /* Transição suave */
+  transition: all 0.3s ease;
+}
+
+/* Pseudo-elemento do slider (círculo branco) */
+.toggle-slider:before {
+  /* Define um elemento pseudo */
+  content: '';
+  /* Define a posição absoluta */
+  position: absolute;
+  /* Define a altura */
+  height: 22px;
+  /* Define a largura */
+  width: 22px;
+  /* Define a posição esquerda */
+  left: 3px;
+  /* Define a posição superior */
+  bottom: 3px;
+  /* Define a cor de fundo branca */
+  background-color: white;
+  /* Remove as bordas agudas */
+  border-radius: 50%;
+  /* Transição suave */
+  transition: all 0.3s ease;
+  /* Sombra sutil */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Toggle ativado (input checked) */
+.toggle-input:checked + .toggle-slider {
+  /* Define a cor de fundo azul */
+  background-color: black;
+}
+
+/* Slider quando o toggle está desabilitado */
+.toggle-input:disabled + .toggle-slider {
+  /* Define uma sombra mais sutil */
+  background-color: rgb(117, 117, 117);
+  cursor: not-allowed;
+}
+
+/* Slider quando o toggle está ativado */
+.toggle-input:checked + .toggle-slider:before {
+  /* Move o círculo para a direita */
+  left: 25px;
+}
+
+/* ===== MENSAGEM DE SALVA AUTOMÃTICA ===== */
+
+/* Mensagem de salva automática */
+.auto-save-message {
+  /* Define o tamanho da fonte */
+  font-size: 13px;
+  /* Define a cor do texto cinza */
+  color: #999;
+  /* Centraliza o texto */
+  text-align: center;
+  /* Define o espaçamento interno */
+  padding: 20px 0;
+  /* Remove margens padrão */
+  margin: 0;
+  /* Define a altura da linha */
+  line-height: 1.5;
+}
+
+/* Estilos para dispositivos com tela pequena (móvel) */
+@media (max-width: 480px) {
+  /* Container do perfil em telas pequenas */
+  .profile-container {
+    /* Reduz o espaçamento interno */
+    padding: 20px 15px;
+  }
+
+  /* Título do perfil em telas pequenas */
+  .profile-title {
+    /* Reduz o tamanho da fonte */
+    font-size: 20px;
+  }
+
+  /* Botões de opção em telas pequenas */
+  .option-btn {
+    /* Define um tamanho menor de fonte */
+    font-size: 13px;
+    /* Reduz o espaçamento interno */
+    padding: 12px;
+  }
+}

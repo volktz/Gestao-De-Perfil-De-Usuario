@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <!-- Define a codificação UTF-8 para suportar caracteres especiais -->
+    <meta charset="UTF-8">
+    <!-- Define a escala da página para dispositivos móveis -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Define o título da página (aparece na aba do navegador) -->
+    <title>Meu Perfil</title>
+    <!-- Importa o arquivo de estilos CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Container principal que engloba toda a página -->
+    <div class="container">
+        <!-- Container do perfil -->
+        <div class="profile-container">
+            <!-- Header com botão de voltar e título -->
+            <div class="profile-header">
+                <!-- Botão de voltar no topo -->
+                <button class="btn-voltar" onclick="window.history.back()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <!-- Título "Meu Perfil" -->
+                <h1 class="profile-title">Meu Perfil</h1>
+            </div>
+
+            <!-- Container da foto de perfil -->
+            <div class="profile-photo-container">
+                <!-- Imagem de perfil do usuário -->
+                <img src="img/image.png" alt="Foto de Perfil" class="profile-photo">
+                <!-- Ícone de edição sobreposto na foto -->
+                <button class="edit-photo-btn" onclick="editPhoto()">✏️</button>
+            </div>
+
+            <!-- Texto para remover a foto atual (em vermelho) -->
+            <p class="remove-photo-text" onclick="removePhoto()">Remover Foto Atual</p>
+
+            <!-- Formulário com os dados do perfil -->
+            <form class="profile-form">
+                <!-- Seção do Nome Completo -->
+                <div class="form-group">
+                    <!-- Label para o campo de nome -->
+                    <label for="nome">Nome Completo</label>
+                    <!-- Input de texto para o nome (com valor padrão) -->
+                    <input type="text" id="nome" name="nome" value="Paulo H." placeholder="Digite seu nome completo">
+                </div>
+
+                <!-- Seção do E-mail -->
+                <div class="form-group">
+                    <!-- Label para o campo de e-mail -->
+                    <label for="email">E-mail</label>
+                    <!-- Input de e-mail para o endereço (com valor padrão) - inEditavel -->
+                    <input type="email" id="email" name="email" value="paulo.h@empresa.com" placeholder="Digite seu e-mail" readonly>
+                </div>
+
+                <!-- Seção do Telefone -->
+                <div class="form-group">
+                    <!-- Label para o campo de telefone -->
+                    <label for="telefone">Telefone</label>
+                    <!-- Input de telefone para o número (com valor padrão) -->
+                    <input type="tel" id="telefone" name="telefone" value="(11) 98765-4321" placeholder="Digite seu telefone">
+                </div>
+
+                <!-- Container dos botões de opções -->
+                <div class="options-container">
+                    <!-- Botão para alterar a senha (com seta indicadora) -->
+                    <button type="button" class="option-btn" onclick="alterarSenha()">
+                        <div class="option-content">
+                            <span class="option-title">Alterar Senha de Acesso</span>
+                        </div>
+                        <span class="arrow">></span>
+                    </button>
+                    <!-- Botão para preferências e notificações (com seta indicadora) -->
+                    <button type="button" class="option-btn" onclick="abrirPreferencias()">
+                        <div class="option-content">
+                            <span class="option-title">Preferências e Notificações</span>
+                            <p class="testezin">Gerenciar e-mails e alertas</p>
+                        </div>
+                        <span class="arrow">></span>
+                    </button>
+                </div>
+
+                <!-- Botão principal para salvar as alterações -->
+                <button type="submit" class="btn-salvar" onclick="salvarAlteracoes()">Salvar Alterações</button>
+            </form>
+        </div>
+
+        <!-- Container de Preferências e Notificações (inicialmente oculto) -->
+        <div class="profile-container" id="preferences-container" style="display: none;">
+            <!-- Header com botão de voltar e título -->
+            <div class="profile-header">
+                <!-- Botão de voltar -->
+                <button class="btn-voltar" onclick="voltarDoPreferencias()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <!-- Título "Preferências e Notificações" -->
+                <h1 class="profile-title">Preferências e Notificações</h1>
+            </div>
+
+            <!-- Container das opções de notificações -->
+            <div class="preferences-list">
+                <!-- Opção 1: Alertas do Sistema -->
+                <div class="preference-item">
+                    <div class="preference-content">
+                        <h3 class="preference-title">Alertas do Sistema</h3>
+                        <p class="preference-description">Receba notificações sobre atividades importantes na sua conta.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Opção 2: E-mails de Segurança -->
+                <div class="preference-item">
+                    <div class="preference-content">
+                        <h3 class="preference-title">E-mails de Segurança</h3>
+                        <p class="preference-description">Seja avisado sobre novas tentativas de login e alterações de senha.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input" checked disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Opção 3: Novidades e Ofertas (E-mail) -->
+                <div class="preference-item">
+                    <div class="preference-content">
+                        <h3 class="preference-title">Novidades e Ofertas (E-mail)</h3>
+                        <p class="preference-description">Fique por dentro de novas funcionalidades, dicas e promoções especiais.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Opção 4: Pesquisas de Opinião -->
+                <div class="preference-item">
+                    <div class="preference-content">
+                        <h3 class="preference-title">Pesquisas de Opinião</h3>
+                        <p class="preference-description">Queremos ouvir você. Enviaremos convites ocasionais para avaliar nossos serviços.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Mensagem de salva automática -->
+            <p class="auto-save-message">Suas alterações são salvas automaticamente ao integrar com os interruptores.</p>
+        </div>
+    </div>
+
+    <!-- Importa o arquivo de JavaScript -->
+    <script src="script.js"></script>
+</body>
+
+</html>
