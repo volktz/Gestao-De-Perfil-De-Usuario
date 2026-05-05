@@ -1,12 +1,13 @@
 <?php
 
-$senha = $_POST["current-password"];
+$senhaInserida = $_POST["current-password"];
+$senhaUsuario = "senha_atual_do_usuario"; // Substitua isso pela senha atual do usuário, que você deve obter do banco de dados
 $senhaNova = $_POST["new-password"];
-$confirmSenhaNova = $_POST["confirm-new-password"];
 
-echo $senha;
+echo $senhaInserida;
 echo $senhaNova;
-echo $confirmSenhaNova;
+echo $senhaUsuario;
+
 
 
 
