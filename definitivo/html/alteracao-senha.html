@@ -5,18 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alterar Senha</title>
-    <link rel="stylesheet" href="/definitivo/style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
     <main class="page-shell">
         <section class="profile-card" aria-labelledby="alteracao-senha-title">
             <header class="profile-header">
-                <a class="btn-voltar btn-voltar-link" href="/definitivo/index.html" aria-label="Voltar">←</a>
+                <a class="btn-voltar btn-voltar-link" href="../index.html" aria-label="Voltar">←</a>
                 <h1 class="profile-title" id="alteracao-senha-title">Alterar Senha de Acesso</h1>
             </header>
 
-            <form method="post" action="/definitivo/script/alteracao-senha.php">
+            <form method="post" action="../script/alteracao-senha.php">
                 <div class="form-group">
                     <label for="current-password">Senha Atual</label>
                     <input type="password" id="current-password" name="current-password" placeholder="Digite sua senha atual">
@@ -28,11 +28,39 @@
                 <div class="form-group">
                     <label for="confirm-new-password">Confirmar Nova Senha</label>
                     <input type="password" id="confirm-new-password" name="confirm-new-password" placeholder="Confirme sua nova senha">
+                    <p id="password-error" style="color: #e74c3c; font-size: 0.9em; margin-top: 5px; display: none;">As senhas não coincidem</p>
                 </div>
-                <button type="submit" class="btn-salvar">Salvar Alterações</button>
+                <button type="submit" class="btn-salvar" disabled>Salvar Alterações</button>
             </form>
         </section>
     </main>
+
+    <script>
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmPasswordInput = document.getElementById('confirm-new-password');
+        const submitButton = document.querySelector('.btn-salvar');
+        const passwordError = document.getElementById('password-error');
+
+        function validatePasswords() {
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (confirmPassword && newPassword !== confirmPassword) {
+                passwordError.style.display = 'block';
+                submitButton.disabled = true;
+            } else {
+                passwordError.style.display = 'none';
+                if (newPassword && confirmPassword && newPassword === confirmPassword) {
+                    submitButton.disabled = false;
+                } else {
+                    submitButton.disabled = true;
+                }
+            }
+        }
+
+        newPasswordInput.addEventListener('input', validatePasswords);
+        confirmPasswordInput.addEventListener('input', validatePasswords);
+    </script>
 </body>
 
 </html>
