@@ -16,14 +16,14 @@
                 <h1 class="profile-title" id="preferencias-title">Preferências e Notificações</h1>
             </header>
 
-            <div class="preferences-list">
+            <form class="preferences-list" method="post" action="../script/preferencia/ajuste-preferrencia.php">
                 <div class="preference-item">
                     <div class="preference-content">
                         <h2 class="preference-title">Alertas do Sistema</h2>
                         <p class="preference-description">Receba notificações sobre atividades importantes na sua conta.</p>
                     </div>
                     <label class="toggle-switch" id="checkboxAlertaDoSistema">
-                        <input type="checkbox" class="toggle-input" checked>
+                        <input type="checkbox" class="toggle-input" name="alertas_sistema" id="alertasSistema">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -34,7 +34,8 @@
                         <p class="preference-description">Seja avisado sobre novas tentativas de login e alterações de senha.</p>
                     </div>
                     <label class="toggle-switch" id="checkboxEmailsDeSeguranca">
-                        <input type="checkbox" class="toggle-input" checked disabled>
+                        <input type="hidden" name="emails_seguranca" id="emailsSegurancaValor" value="0">
+                        <input type="checkbox" class="toggle-input" id="emailsSeguranca" disabled>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -45,7 +46,7 @@
                         <p class="preference-description">Fique por dentro de novas funcionalidades, dicas e promoções especiais.</p>
                     </div>
                     <label class="toggle-switch" id="checkboxNovidadesEOfertas">
-                        <input type="checkbox" class="toggle-input">
+                        <input type="checkbox" class="toggle-input" name="novidades_ofertas" id="novidadesOfertas">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -56,15 +57,71 @@
                         <p class="preference-description">Queremos ouvir você. Enviaremos convites ocasionais para avaliar nossos serviços.</p>
                     </div>
                     <label class="toggle-switch" id="checkboxPesquisasDeOpiniao">
-                        <input type="checkbox" class="toggle-input">
+                        <input type="checkbox" class="toggle-input" name="pesquisas_opiniao" id="pesquisasOpiniao">
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
-            </div>
+                <br>
 
-            <p class="auto-save-message">Suas alterações são salvas automaticamente ao integrar com os interruptores.</p>
+                <div class="form-actions">
+                    <button type="submit" class="btn-salvar">Salvar configurações</button>
+                </div>
+            </form>
         </section>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Faz uma requisição para buscar as preferências salvas no PHP.
+                const response = await fetch('../script/preferencia/busca-preferencia.php');
+                // Se a resposta não for válida, interrompe a execução.
+                if (!response.ok) {
+                    return;
+                }
+
+                // Converte a resposta recebida em JSON.
+                const preferencias = await response.json();
+
+                // Recebe o id do input e o valor do banco para marcar ou desmarcar.
+                const marcarCheckbox = (id, valor) => {
+                    // Procura o checkbox pelo id informado.
+                    const checkbox = document.getElementById(id);
+                    // Se existir, marca quando o valor for 1 e desmarca quando for 0.
+                    if (checkbox) {
+                        checkbox.checked = Number(valor) === 1;
+                    }
+                };
+
+                // Marca ou desmarca a opção de alertas do sistema.
+                marcarCheckbox('alertasSistema', preferencias.alertas_sistema ?? 0);
+                // Marca ou desmarca a opção de novidades e ofertas.
+                marcarCheckbox('novidadesOfertas', preferencias.emails_marketing ?? 0);
+                // Marca ou desmarca a opção de pesquisas de opinião.
+                marcarCheckbox('pesquisasOpiniao', preferencias.pesquisa_opiniao ?? 0);
+
+                // Converte o valor de e-mails de segurança para 1 ou 0.
+                const emailsSeguranca = Number(preferencias.emails_seguranca ?? 0) === 1 ? 1 : 0;
+                // Pega o input hidden que envia esse valor no formulário.
+                const hiddenEmailsSeguranca = document.getElementById('emailsSegurancaValor');
+                // Pega o checkbox visual de e-mails de segurança.
+                const checkboxEmailsSeguranca = document.getElementById('emailsSeguranca');
+
+                // Atualiza o hidden com o valor vindo do banco.
+                if (hiddenEmailsSeguranca) {
+                    hiddenEmailsSeguranca.value = emailsSeguranca;
+                }
+
+                // Define o estado visual do checkbox de segurança.
+                if (checkboxEmailsSeguranca) {
+                    checkboxEmailsSeguranca.checked = emailsSeguranca === 1;
+                }
+                // Mostra o erro no console caso algo falhe ao carregar os dados.
+            } catch (error) {
+                console.error('Erro ao carregar preferências:', error);
+            }
+        });
+    </script>
 </body>
 
 </html>
