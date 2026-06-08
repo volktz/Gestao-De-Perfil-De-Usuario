@@ -2,24 +2,11 @@
 
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/audit.php';
-
-$host = 'localhost';
-$db   = 'perfil_de_usuario';
-$user = 'root';
-$pass = 'senac';
-$charset = 'utf8mb4';
-
-$dsn = "mysql:host=$host;port=3307;dbname=$db;charset=$charset";
-
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
+require_once __DIR__ . '/config.php';
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
+    $pdo = getPdo();
+} catch (PDOException $e) {
     http_response_code(500);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'message' => 'Erro de conexao com o banco.']);

@@ -22,21 +22,10 @@ if ($email === '' || $senha === '') {
     exit;
 }
 
-$host = 'localhost';
-$db = 'perfil_de_usuario';
-$user = 'root';
-$pass = 'senac';
-$charset = 'utf8mb4';
-$dsn = "mysql:host=$host;port=3307;dbname=$db;charset=$charset";
-
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES => false,
-];
+require_once __DIR__ . '/config.php';
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
+    $pdo = getPdo();
     $stmt = $pdo->prepare('SELECT id_usuario, nome_completo, email, senha_hash FROM usuario WHERE email = :email LIMIT 1');
     $stmt->execute([':email' => $email]);
     $usuario = $stmt->fetch();

@@ -11,26 +11,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 	exit;
 }
 
-$host = 'localhost';
-$db   = 'perfil_de_usuario';
-$user = 'root';
-$pass = 'senac';
-$charset = 'utf8mb4';
+require_once __DIR__ . '/config.php';
 
-$dsn = "mysql:host=$host;port=3307;dbname=$db;charset=$charset";
-
-$options = [
-	PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-	PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-	PDO::ATTR_EMULATE_PREPARES   => false,
-];
+try {
+	$pdo = getPdo();
+} catch (PDOException $e) {
+	http_response_code(500);
+	echo json_encode(['success' => false, 'message' => 'Erro de conexao com o banco.']);
+	exit;
+}
 
 $nomeCompleto = isset($_POST['nome_completo']) ? trim($_POST['nome_completo']) : '';
 $email = isset($_POST['email']) ? trim($_POST['email']) : '';
 $telefone = isset($_POST['telefone']) ? trim($_POST['telefone']) : '';
 
 try {
-	$pdo = new PDO($dsn, $user, $pass, $options);
 	$idUsuario = obterIdUsuarioAtual($pdo);
 
 	if ($idUsuario <= 0) {
@@ -73,5 +68,27 @@ try {
 	]);
 } catch (\PDOException $e) {
 	http_response_code(500);
-	echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+
+	// Log error to file for debugging
+	$logDir = __DIR__ . '/logs';
+	if (!is_dir($logDir)) {
+		@mkdir($logDir, 0755, true);
+	}
+
+	$logFile = $logDir . '/errors.log';
+	$logEntry = sprintf("[%s] %s in %s on line %d\nSQLSTATE: %s\n\n", date('c'), $e->getMessage(), $e->getFile(), $e->getLine(), $e->getCode());
+	@file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+
+	// Handle duplicate entry (unique constraint) gracefully
+	$message = 'Erro ao salvar os dados.';
+	$code = (string) $e->getCode();
+
+	if ($code === '23000' || stripos($e->getMessage(), 'Duplicate') !== false) {
+		$message = 'O e-mail informado já está em uso.';
+	} else {
+		// In non-prod, expose message to help debugging (safe because this is local dev)
+		$message = $e->getMessage();
+	}
+
+	echo json_encode(['success' => false, 'message' => $message]);
 }

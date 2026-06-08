@@ -18,12 +18,12 @@ for ($i = 0, $total = count($preferencias); $i < $total; $i++) {
 
 $host = 'localhost';
 $db   = 'perfil_de_usuario';
+
 $user = 'root';
-$pass = 'senac';
+$pass = '';
 $charset = 'utf8mb4';
 
-// Configurações do DSN (Data Source Name)
-$dsn = "mysql:host=$host;port=3307;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;port=3306;dbname=$db;charset=$charset";
 
 // Opções extras para segurança e performance
 $options = [
@@ -32,12 +32,14 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,                  // Usa Prepared Statements reais
     ];
     
-    try {
-        $pdo = new PDO($dsn, $user, $pass, $options);
-        } catch (\PDOException $e) {
-            // Em produção, salve o erro em um log em vez de dar echo
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
-            }
+require_once __DIR__ . '/../config.php';
+
+try {
+    $pdo = getPdo();
+} catch (PDOException $e) {
+    // Em produção, salve o erro em um log em vez de dar echo
+    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+}
 
 $id_usuario_logado = obterIdUsuarioAtual($pdo);
 

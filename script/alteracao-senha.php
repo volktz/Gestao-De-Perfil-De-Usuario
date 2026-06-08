@@ -11,19 +11,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 	exit;
 }
 
-$host = 'localhost';
-$db   = 'perfil_de_usuario';
-$user = 'root';
-$pass = 'senac';
-$charset = 'utf8mb4';
+require_once __DIR__ . '/config.php';
 
-$dsn = "mysql:host=$host;port=3307;dbname=$db;charset=$charset";
-
-$options = [
-	PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-	PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-	PDO::ATTR_EMULATE_PREPARES   => false,
-];
+try {
+	$pdo = getPdo();
+} catch (PDOException $e) {
+	http_response_code(500);
+	echo json_encode(['success' => false, 'message' => 'Erro de conexao com o banco.']);
+	exit;
+}
 
 $senhaAtual = isset($_POST['current-password']) ? trim($_POST['current-password']) : '';
 $senhaNova = isset($_POST['new-password']) ? trim($_POST['new-password']) : '';
@@ -48,8 +44,6 @@ if (strlen($senhaNova) < 6) {
 }
 
 try {
-	$pdo = new PDO($dsn, $user, $pass, $options);
-
 	$idUsuario = obterIdUsuarioAtual($pdo);
 
 	if ($idUsuario <= 0) {
