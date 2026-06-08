@@ -6,53 +6,83 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Captura dos campos do formulário em variáveis correspondentes
 $nomeCompleto = isset($_POST['nome_completo']) ? trim($_POST['nome_completo']) : '';
 $email = isset($_POST['email']) ? trim($_POST['email']) : '';
 $telefone = isset($_POST['telefone']) ? trim($_POST['telefone']) : '';
 $senha = isset($_POST['senha']) ? trim($_POST['senha']) : '';
 $confirmarSenha = isset($_POST['confirmar_senha']) ? trim($_POST['confirmar_senha']) : '';
 
-
 require_once __DIR__ . '/config.php';
+
+function redirectWithError(string $message): void
+{
+    header('Location: ../index.html?error=' . urlencode($message));
+    exit;
+}
+
+function isValidPassword(string $senha): bool
+{
+    return (bool) preg_match('/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#!$%]).{8,}$/', $senha);
+}
+
+if ($nomeCompleto === '' || $email === '' || $senha === '' || $confirmarSenha === '') {
+    redirectWithError('Preencha nome, e-mail e senha.');
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    redirectWithError('E-mail inválido.');
+}
+
+if ($senha !== $confirmarSenha) {
+    redirectWithError('As senhas não coincidem.');
+}
+
+if (!isValidPassword($senha)) {
+    redirectWithError('A senha deve ter pelo menos 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial (@, #, !, $, %).');
+}
 
 try {
     $pdo = getPdo();
 } catch (PDOException $e) {
-    // Em produção, salve o erro em um log em vez de dar echo
-    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+    throw new \PDOException($e->getMessage(), (int) $e->getCode());
 }
 
 try {
     $pdo->beginTransaction();
 
-$sql = "INSERT INTO usuario
-        (nome_completo, email, telefone, senha_hash, criado_em) 
-        VALUES 
-        (:nome_completo, :email, :telefone, :senha, NOW())";
+    $checkEmailSql = 'SELECT COUNT(*) FROM usuario WHERE email = :email';
+    $stmtCheckEmail = $pdo->prepare($checkEmailSql);
+    $stmtCheckEmail->execute([':email' => $email]);
 
-$stmt = $pdo->prepare($sql);
+    if ((int) $stmtCheckEmail->fetchColumn() > 0) {
+        redirectWithError('O e-mail informado já está em uso.');
+    }
 
-$stmt->execute([
-    ':nome_completo' => (string) $nomeCompleto,
-    ':email' => (string) $email,
-    ':telefone' => (string) $telefone,
-    ':senha' => (string) password_hash($senha, PASSWORD_DEFAULT)
-]);
+    $sql = "INSERT INTO usuario
+            (nome_completo, email, telefone, senha_hash, criado_em) 
+            VALUES 
+            (:nome_completo, :email, :telefone, :senha, NOW())";
 
-$idUsuario = (int) $pdo->lastInsertId();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':nome_completo' => (string) $nomeCompleto,
+        ':email' => (string) $email,
+        ':telefone' => (string) $telefone,
+        ':senha' => (string) password_hash($senha, PASSWORD_DEFAULT),
+    ]);
 
-$sqlPreferencia = "INSERT INTO preferencia_usuario (id_usuario)
-        VALUES (:id_usuario)";
+    $idUsuario = (int) $pdo->lastInsertId();
 
-$stmtPreferencia = $pdo->prepare($sqlPreferencia);
-$stmtPreferencia->execute([
-    ':id_usuario' => $idUsuario,
-]);
+    $sqlPreferencia = "INSERT INTO preferencia_usuario (id_usuario)
+            VALUES (:id_usuario)";
+    $stmtPreferencia = $pdo->prepare($sqlPreferencia);
+    $stmtPreferencia->execute([
+        ':id_usuario' => $idUsuario,
+    ]);
 
-registrarAuditoria($pdo, $idUsuario, 'cadastro');
+    registrarAuditoria($pdo, $idUsuario, 'cadastro');
 
-$pdo->commit();
+    $pdo->commit();
 } catch (\Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
@@ -63,26 +93,5 @@ $pdo->commit();
 
 header('Location: ../html/login.html');
 exit;
-
-
-// $sql = "UPDATE preferencia_usuario 
-//                 SET
-//                 alertas_sistema = :alertas_sistema, 
-//                 emails_seguranca = :emails_seguranca, 
-//                 emails_marketing = :emails_marketing, 
-//                 pesquisa_opiniao = :pesquisa_opiniao, 
-//                 atualizado_em = NOW()
-//             WHERE id_usuario = :id_usuario";
-
-//     $stmt = $pdo->prepare($sql);
-
-//     // 4. Executa passando os valores na ordem correta
-//     $stmt->execute([
-//         ':id_usuario' => $id_usuario_logado,
-//         ':alertas_sistema' => $alertas_sistema,
-//         ':emails_seguranca' => $emails_seguranca,
-//         ':emails_marketing' => $emails_marketing,
-//         ':pesquisa_opiniao' => $pesquisa_opiniao
-//     ]);
 
 ?>

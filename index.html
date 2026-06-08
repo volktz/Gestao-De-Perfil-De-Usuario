@@ -22,7 +22,7 @@
                 Preencha os dados abaixo para criar um novo cadastro e começar a usar o sistema.
             </p>
 
-            <form class="profile-form cadastro-form" action="script/cadastro.php" method="post" onsubmit="return validarCadastro()">
+            <form class="profile-form cadastro-form" id="cadastro-form" action="script/cadastro.php" method="post" onsubmit="return validarCadastro()">
                 <div class="form-group">
                     <label for="nome-completo">Nome completo</label>
                     <input type="text" id="nome-completo" name="nome_completo" placeholder="Digite seu nome completo" required>
@@ -31,6 +31,7 @@
                 <div class="form-group">
                     <label for="email">E-mail</label>
                     <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+                    <p id="email-error" class="field-error" aria-live="polite" hidden>Digite um e-mail válido.</p>
                 </div>
 
                 <!-- Campo 'usuario' removido conforme solicitado -->
@@ -44,6 +45,16 @@
                     <div class="form-group">
                         <label for="senha">Senha</label>
                         <input type="password" id="senha" name="senha" placeholder="Crie uma senha" required>
+                        <div id="password-rules" class="password-rules">
+                            <p>Senha deve conter:</p>
+                            <ul>
+                                <li id="rule-length">8 ou mais caracteres</li>
+                                <li id="rule-upper">Letra maiúscula</li>
+                                <li id="rule-lower">Letra minúscula</li>
+                                <li id="rule-number">Número</li>
+                                <li id="rule-special">Caractere especial (@, #, !, $, %)</li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -52,6 +63,8 @@
                         <p id="password-error" class="field-error" aria-live="polite" hidden>As senhas não coincidem.</p>
                     </div>
                 </div>
+
+                <div id="form-feedback" class="field-error" aria-live="polite" hidden></div>
 
                 <label class="terms-check">
                     <input type="checkbox" name="termos" required>
@@ -67,20 +80,113 @@
     </main>
 
     <script>
+        const formFeedback = document.getElementById('form-feedback');
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+        const senhaInput = document.getElementById('senha');
+        const confirmarSenhaInput = document.getElementById('confirmar-senha');
+        const passwordError = document.getElementById('password-error');
+        const ruleLength = document.getElementById('rule-length');
+        const ruleUpper = document.getElementById('rule-upper');
+        const ruleLower = document.getElementById('rule-lower');
+        const ruleNumber = document.getElementById('rule-number');
+        const ruleSpecial = document.getElementById('rule-special');
+
+        function setRuleState(element, isValid) {
+            element.style.color = isValid ? '#166534' : '#b42318';
+        }
+
+        function getPasswordValidation(password) {
+            return {
+                length: password.length >= 8,
+                upper: /[A-Z]/.test(password),
+                lower: /[a-z]/.test(password),
+                number: /\d/.test(password),
+                special: /[@#!$%]/.test(password),
+            };
+        }
+
+        function updatePasswordRules() {
+            const status = getPasswordValidation(senhaInput.value);
+            setRuleState(ruleLength, status.length);
+            setRuleState(ruleUpper, status.upper);
+            setRuleState(ruleLower, status.lower);
+            setRuleState(ruleNumber, status.number);
+            setRuleState(ruleSpecial, status.special);
+        }
+
+        function showFormFeedback(message) {
+            formFeedback.textContent = message;
+            formFeedback.hidden = false;
+        }
+
+        function clearFormFeedback() {
+            formFeedback.textContent = '';
+            formFeedback.hidden = true;
+        }
+
         function validarCadastro() {
-            const senha = document.getElementById('senha').value;
-            const confirmarSenha = document.getElementById('confirmar-senha').value;
-            const passwordError = document.getElementById('password-error');
+            const senha = senhaInput.value;
+            const confirmarSenha = confirmarSenhaInput.value;
+            const emailValido = emailInput.checkValidity();
+            const passwordStatus = getPasswordValidation(senha);
+            const senhaValida = Object.values(passwordStatus).every(Boolean);
+
+            emailError.hidden = emailValido;
+            if (!emailValido) {
+                emailError.textContent = 'Informe um e-mail válido.';
+                emailInput.focus();
+                return false;
+            }
+
+            if (!senhaValida) {
+                showFormFeedback('A senha deve ter pelo menos 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial (@, #, !, $, %).');
+                senhaInput.focus();
+                return false;
+            }
 
             if (senha !== confirmarSenha) {
                 passwordError.hidden = false;
-                document.getElementById('confirmar-senha').focus();
+                confirmarSenhaInput.focus();
                 return false;
             }
 
             passwordError.hidden = true;
+            clearFormFeedback();
             return true;
         }
+
+        function renderServerErrorFromQuery() {
+            const params = new URLSearchParams(window.location.search);
+            const errorMessage = params.get('error');
+
+            if (errorMessage) {
+                showFormFeedback(errorMessage);
+            }
+        }
+
+        emailInput.addEventListener('input', () => {
+            const valid = emailInput.checkValidity();
+            emailError.hidden = valid;
+            if (!valid) {
+                emailError.textContent = 'Digite um e-mail válido.';
+            }
+        });
+
+        senhaInput.addEventListener('input', () => {
+            updatePasswordRules();
+            passwordError.hidden = true;
+            clearFormFeedback();
+        });
+
+        confirmarSenhaInput.addEventListener('input', () => {
+            passwordError.hidden = confirmarSenhaInput.value === senhaInput.value;
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updatePasswordRules();
+            renderServerErrorFromQuery();
+        });
     </script>
 </body>
 

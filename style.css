@@ -269,6 +269,26 @@ button {
 	margin: 8px 0 0;
 }
 
+.password-rules {
+	font-size: 12px;
+	margin-top: 8px;
+	color: #516074;
+}
+
+.password-rules p {
+	margin: 0 0 6px;
+	font-weight: 600;
+}
+
+.password-rules ul {
+	margin: 0;
+	padding-left: 18px;
+}
+
+.password-rules li {
+	margin-bottom: 4px;
+}
+
 .save-feedback {
 	margin-top: 16px;
 	padding: 10px 14px;

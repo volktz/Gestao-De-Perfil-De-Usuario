@@ -13,6 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/config.php';
 
+function isValidPassword(string $senha): bool
+{
+	return (bool) preg_match('/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#!$%]).{8,}$/', $senha);
+}
+
 try {
 	$pdo = getPdo();
 } catch (PDOException $e) {
@@ -37,9 +42,15 @@ if ($senhaNova !== $confirmarSenha) {
 	exit;
 }
 
-if (strlen($senhaNova) < 6) {
+if ($senhaNova === $senhaAtual) {
 	http_response_code(400);
-	echo json_encode(['success' => false, 'message' => 'A nova senha deve ter pelo menos 6 caracteres.']);
+	echo json_encode(['success' => false, 'message' => 'A nova senha nao pode ser igual à senha atual.']);
+	exit;
+}
+
+if (!isValidPassword($senhaNova)) {
+	http_response_code(400);
+	echo json_encode(['success' => false, 'message' => 'A nova senha deve ter pelo menos 8 caracteres, incluindo letra maiúscula, letra minúscula, número e caractere especial (@, #, !, $, %).']);
 	exit;
 }
 
@@ -75,6 +86,18 @@ try {
 		':senha_hash' => $novaSenhaHash,
 		':id_usuario' => (int) $usuario['id_usuario'],
 	]);
+
+	$stmtAtualizado = $pdo->prepare('SELECT atualizado_em FROM usuario WHERE id_usuario = :id_usuario LIMIT 1');
+	$stmtAtualizado->execute([':id_usuario' => (int) $usuario['id_usuario']]);
+	$atualizadoEm = $stmtAtualizado->fetchColumn();
+
+	if (session_status() === PHP_SESSION_NONE) {
+		session_start();
+	}
+	if (!empty($_SESSION['id_usuario']) && (int) $_SESSION['id_usuario'] === (int) $usuario['id_usuario']) {
+		$_SESSION['senha_atualizada_em'] = $atualizadoEm;
+		session_regenerate_id(true);
+	}
 
 	registrarAuditoria($pdo, (int) $usuario['id_usuario'], 'alteracao_senha');
 

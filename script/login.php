@@ -26,7 +26,7 @@ require_once __DIR__ . '/config.php';
 
 try {
     $pdo = getPdo();
-    $stmt = $pdo->prepare('SELECT id_usuario, nome_completo, email, senha_hash FROM usuario WHERE email = :email LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id_usuario, nome_completo, email, senha_hash, atualizado_em FROM usuario WHERE email = :email LIMIT 1');
     $stmt->execute([':email' => $email]);
     $usuario = $stmt->fetch();
 
@@ -43,6 +43,7 @@ try {
     $_SESSION['id_usuario'] = (int) $usuario['id_usuario'];
     $_SESSION['nome_completo'] = $usuario['nome_completo'];
     $_SESSION['email'] = $usuario['email'];
+    $_SESSION['senha_atualizada_em'] = $usuario['atualizado_em'] ?? null;
 
     registrarAuditoria($pdo, (int) $usuario['id_usuario'], 'login');
 

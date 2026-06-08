@@ -19,17 +19,28 @@
             <form method="post" action="../script/alteracao-senha.php" id="changePasswordForm">
                 <div class="form-group">
                     <label for="current-password">Senha Atual</label>
-                    <input type="password" id="current-password" name="current-password" placeholder="Digite sua senha atual">
+                    <input type="password" id="current-password" name="current-password" placeholder="Digite sua senha atual" required>
                 </div>
                 <div class="form-group">
                     <label for="new-password">Nova Senha</label>
-                    <input type="password" id="new-password" name="new-password" placeholder="Digite sua nova senha">
+                    <input type="password" id="new-password" name="new-password" placeholder="Digite sua nova senha" required>
+                    <div id="password-rules" class="password-rules">
+                        <p>Senha deve conter:</p>
+                        <ul>
+                            <li id="rule-length">8 ou mais caracteres</li>
+                            <li id="rule-upper">Uma letra maiúscula</li>
+                            <li id="rule-lower">Uma letra minúscula</li>
+                            <li id="rule-number">Um número</li>
+                            <li id="rule-special">Um caractere especial (@, #, !, $, %)</li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="confirm-new-password">Confirmar Nova Senha</label>
-                    <input type="password" id="confirm-new-password" name="confirm-new-password" placeholder="Confirme sua nova senha">
+                    <input type="password" id="confirm-new-password" name="confirm-new-password" placeholder="Confirme sua nova senha" required>
                     <p id="password-error" style="color: #e74c3c; font-size: 0.9em; margin-top: 5px; display: none;">As senhas não coincidem</p>
                 </div>
+                <div id="password-update-error" class="field-error" style="display:none; margin-bottom: 12px;"></div>
                 <button type="submit" class="btn-salvar" disabled>Salvar Alterações</button>
                 <p id="password-save-feedback" class="save-feedback" style="display:none;"></p>
             </form>
@@ -37,39 +48,104 @@
     </main>
 
     <script>
+        const currentPasswordInput = document.getElementById('current-password');
         const newPasswordInput = document.getElementById('new-password');
         const confirmPasswordInput = document.getElementById('confirm-new-password');
         const submitButton = document.querySelector('.btn-salvar');
         const passwordError = document.getElementById('password-error');
+        const passwordUpdateError = document.getElementById('password-update-error');
         const changePasswordForm = document.getElementById('changePasswordForm');
         const saveFeedback = document.getElementById('password-save-feedback');
+        const ruleLength = document.getElementById('rule-length');
+        const ruleUpper = document.getElementById('rule-upper');
+        const ruleLower = document.getElementById('rule-lower');
+        const ruleNumber = document.getElementById('rule-number');
+        const ruleSpecial = document.getElementById('rule-special');
 
-        function validatePasswords() {
+        function setRuleState(element, isValid) {
+            element.style.color = isValid ? '#166534' : '#b42318';
+        }
+
+        function getPasswordValidation(password) {
+            return {
+                length: password.length >= 8,
+                upper: /[A-Z]/.test(password),
+                lower: /[a-z]/.test(password),
+                number: /\d/.test(password),
+                special: /[@#!$%]/.test(password),
+            };
+        }
+
+        function updatePasswordRules() {
+            const status = getPasswordValidation(newPasswordInput.value);
+            setRuleState(ruleLength, status.length);
+            setRuleState(ruleUpper, status.upper);
+            setRuleState(ruleLower, status.lower);
+            setRuleState(ruleNumber, status.number);
+            setRuleState(ruleSpecial, status.special);
+        }
+
+        function resetFeedback() {
+            passwordError.style.display = 'none';
+            passwordUpdateError.style.display = 'none';
+            saveFeedback.style.display = 'none';
+        }
+
+        function canSubmit() {
+            const currentPassword = currentPasswordInput.value;
             const newPassword = newPasswordInput.value;
             const confirmPassword = confirmPasswordInput.value;
+            const passwordStatus = getPasswordValidation(newPassword);
+            const allRulesValid = Object.values(passwordStatus).every(Boolean);
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                return false;
+            }
+
+            if (newPassword !== confirmPassword) {
+                return false;
+            }
+
+            if (newPassword === currentPassword) {
+                return false;
+            }
+
+            return allRulesValid;
+        }
+
+        function validateForm() {
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            const passwordStatus = getPasswordValidation(newPassword);
+            const allRulesValid = Object.values(passwordStatus).every(Boolean);
+
+            updatePasswordRules();
+            resetFeedback();
 
             if (confirmPassword && newPassword !== confirmPassword) {
                 passwordError.style.display = 'block';
-                submitButton.disabled = true;
-            } else {
-                passwordError.style.display = 'none';
-                if (newPassword && confirmPassword && newPassword === confirmPassword) {
-                    submitButton.disabled = false;
-                } else {
-                    submitButton.disabled = true;
-                }
             }
+
+            if (newPassword && newPassword === currentPassword) {
+                passwordUpdateError.textContent = 'A nova senha não pode ser igual à senha atual.';
+                passwordUpdateError.style.display = 'block';
+            }
+
+            submitButton.disabled = !canSubmit();
         }
 
-        newPasswordInput.addEventListener('input', validatePasswords);
-        confirmPasswordInput.addEventListener('input', validatePasswords);
+        newPasswordInput.addEventListener('input', validateForm);
+        confirmPasswordInput.addEventListener('input', validateForm);
+        currentPasswordInput.addEventListener('input', validateForm);
 
         if (changePasswordForm) {
             changePasswordForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
+                resetFeedback();
 
                 const formData = new URLSearchParams();
-                formData.set('current-password', document.getElementById('current-password').value);
+                formData.set('current-password', currentPasswordInput.value);
                 formData.set('new-password', newPasswordInput.value);
                 formData.set('confirm-new-password', confirmPasswordInput.value);
 
@@ -85,7 +161,7 @@
                     const result = await response.json();
 
                     if (!response.ok || !result.success) {
-                        throw new Error(result.message || 'Nao foi possivel alterar a senha.');
+                        throw new Error(result.message || 'Não foi possível alterar a senha.');
                     }
 
                     if (saveFeedback) {
@@ -97,7 +173,7 @@
 
                     changePasswordForm.reset();
                     submitButton.disabled = true;
-                    passwordError.style.display = 'none';
+                    updatePasswordRules();
                 } catch (error) {
                     if (saveFeedback) {
                         saveFeedback.textContent = error.message || 'Erro ao alterar a senha.';
