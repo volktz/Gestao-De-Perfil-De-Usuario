@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <main class="page-shell">
+        <section class="profile-card cadastro-card" aria-labelledby="login-title">
+            <header class="profile-header">
+                <div>
+                    <p class="section-kicker">Acesso</p>
+                    <h1 class="profile-title" id="login-title">Entrar na conta</h1>
+                </div>
+            </header>
+
+            <p class="cadastro-intro">
+                Use seu e-mail e senha para acessar seu perfil.
+            </p>
+
+            <form class="profile-form cadastro-form" id="login-form" action="../script/login.php" method="post">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+                </div>
+
+                <button type="submit" class="btn-salvar" id="login-button">Entrar</button>
+                <p class="auth-link">
+                    Não tem conta? <a href="../index.html">Criar cadastro</a>
+                </p>
+                <p id="login-feedback" class="save-feedback" aria-live="polite" hidden></p>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById('login-form');
+        const feedback = document.getElementById('login-feedback');
+        const button = document.getElementById('login-button');
+
+        function setFeedback(message, type) {
+            feedback.textContent = message;
+            feedback.hidden = false;
+            feedback.classList.remove('is-success', 'is-error');
+            feedback.classList.add(type === 'success' ? 'is-success' : 'is-error');
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            button.disabled = true;
+            button.textContent = 'Entrando...';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    setFeedback(data.message || 'Não foi possível entrar.', 'error');
+                    return;
+                }
+
+                setFeedback(data.message || 'Login realizado com sucesso.', 'success');
+                window.location.href = data.redirect || '../html/gestao-de-perfil.html';
+            } catch (error) {
+                setFeedback('Erro ao tentar entrar. Tente novamente.', 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Entrar';
+            }
+        });
+    </script>
+</body>
+
+</html>

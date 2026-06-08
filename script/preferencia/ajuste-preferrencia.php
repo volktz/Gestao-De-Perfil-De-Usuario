@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/../audit.php';
 $preferencias = [
      isset($_POST['alertas_sistema']),
      isset($_POST['emails_seguranca']),
@@ -36,8 +39,11 @@ $options = [
             throw new \PDOException($e->getMessage(), (int)$e->getCode());
             }
 
+$id_usuario_logado = obterIdUsuarioAtual($pdo);
 
-$id_usuario_logado = 1; 
+if ($id_usuario_logado <= 0) {
+    throw new RuntimeException('Nenhum usuario foi encontrado para atualizar as preferencias.');
+}
 
 // 2. Os valores que você quer inserir (geralmente vêm de um formulário $_POST)
 $alertas_sistema = $pref1;
@@ -67,6 +73,8 @@ try {
         ':emails_marketing' => $emails_marketing,
         ':pesquisa_opiniao' => $pesquisa_opiniao
     ]);
+
+    registrarAuditoria($pdo, (int) $id_usuario_logado, 'atualizacao_preferencias');
 
     echo "<script>alert('Configurações salvas com sucesso!'); window.location.href = '../../html/gestao-de-perfil.html';</script>";
 

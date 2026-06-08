@@ -1,5 +1,7 @@
 <?php 
 
+require_once __DIR__ . '/../auth.php';
+
 $host = 'localhost';
 $db   = 'perfil_de_usuario';
 $user = 'root';
@@ -23,7 +25,14 @@ try {
         throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 
-$id_usuario_logado = 1;
+$id_usuario_logado = obterIdUsuarioAtual($pdo);
+
+if ($id_usuario_logado <= 0) {
+    $preferencias = [];
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($preferencias);
+    exit;
+}
 
 $querySELECT = "SELECT alertas_sistema, emails_seguranca, emails_marketing, pesquisa_opiniao
                 FROM preferencia_usuario

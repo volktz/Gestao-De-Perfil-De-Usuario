@@ -22,7 +22,7 @@
                 Preencha os dados abaixo para criar um novo cadastro e começar a usar o sistema.
             </p>
 
-            <form class="profile-form cadastro-form" action="html/gestao-de-perfil.html" method="get" onsubmit="return irParaGestao(event)">
+            <form class="profile-form cadastro-form" action="script/cadastro.php" method="post" onsubmit="return validarCadastro()">
                 <div class="form-group">
                     <label for="nome-completo">Nome completo</label>
                     <input type="text" id="nome-completo" name="nome_completo" placeholder="Digite seu nome completo" required>
@@ -59,14 +59,15 @@
                 </label>
 
                 <button type="submit" class="btn-salvar">Criar cadastro</button>
+                <p class="auth-link">
+                    Já tem conta? <a href="html/login.html">Entrar</a>
+                </p>
             </form>
         </section>
     </main>
 
     <script>
-        function irParaGestao(event) {
-            event.preventDefault();
-
+        function validarCadastro() {
             const senha = document.getElementById('senha').value;
             const confirmarSenha = document.getElementById('confirmar-senha').value;
             const passwordError = document.getElementById('password-error');
@@ -78,8 +79,7 @@
             }
 
             passwordError.hidden = true;
-            window.location.href = 'html/gestao-de-perfil.html';
-            return false;
+            return true;
         }
     </script>
 </body>

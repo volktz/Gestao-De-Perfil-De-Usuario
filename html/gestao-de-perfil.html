@@ -12,18 +12,19 @@
     <main class="page-shell">
         <section class="profile-card" aria-labelledby="perfil-title">
             <header class="profile-header">
-                <a class="btn-voltar btn-voltar-link" href="../index.html" aria-label="Voltar">←</a>
                 <h1 class="profile-title" id="perfil-title">Meu Perfil</h1>
+                <button class="btn-logout" type="button" id="logoutBtn">Sair</button>
             </header>
 
             <div class="profile-photo-container">
-                <img src="" alt="Foto de Perfil" class="profile-photo">
-                <button class="edit-photo-btn" type="button" aria-label="Editar foto">✏</button>
+                <img src="" alt="Foto de Perfil" class="profile-photo" id="profilePhoto">
+                <button class="edit-photo-btn" type="button" aria-label="Editar foto" id="editPhotoBtn">✏</button>
+                <input type="file" id="photoInput" accept="image/*" hidden>
             </div>
 
-            <p class="remove-photo-text">Remover Foto Atual</p>
+            <button class="remove-photo-text" type="button" id="removePhotoBtn">Remover Foto Atual</button>
 
-            <form class="profile-form" action="#" method="post">
+            <form class="profile-form" id="profileForm" action="#" method="post">
                 <div class="form-group">
                     <label for="nome">Nome Completo</label>
                     <input type="text" id="nome" name="nome" value="" placeholder="Digite seu nome completo">
@@ -56,10 +57,305 @@
                     </a>
                 </div>
 
+                <button type="button" class="btn-delete-account" id="deleteAccountBtn">Deletar conta</button>
+
                 <button type="submit" class="btn-salvar">Salvar Alterações</button>
             </form>
         </section>
     </main>
+
+    <script>
+        const defaultPhoto = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><rect width="300" height="300" rx="150" fill="%23e8eef6"/><circle cx="150" cy="118" r="48" fill="%23b9c7d8"/><path d="M66 248c18-48 58-74 84-74s66 26 84 74" fill="%23b9c7d8"/></svg>';
+        let currentAvatarUrl = defaultPhoto;
+
+        const photoElement = document.getElementById('profilePhoto');
+        const photoInput = document.getElementById('photoInput');
+        const editPhotoBtn = document.getElementById('editPhotoBtn');
+        const removePhotoBtn = document.getElementById('removePhotoBtn');
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const profileForm = document.getElementById('profileForm');
+        const profileCard = document.querySelector('.profile-card');
+        let currentUserId = 0;
+
+        const openPhotoPicker = () => {
+            if (photoInput) {
+                photoInput.click();
+            }
+        };
+
+        const setPhoto = (src) => {
+            if (photoElement) {
+                photoElement.src = src || defaultPhoto;
+                currentAvatarUrl = src || defaultPhoto;
+            }
+        };
+
+        const uploadPhoto = async (file) => {
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const response = await fetch('../script/atualizar-avatar.php', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                let errorMessage = 'Falha ao enviar a imagem.';
+
+                try {
+                    const errorPayload = await response.json();
+                    errorMessage = errorPayload.message || errorMessage;
+                } catch (parseError) {
+                    const fallbackText = await response.text();
+                    if (fallbackText) {
+                        errorMessage = fallbackText;
+                    }
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.message || 'Falha ao salvar a imagem.');
+            }
+
+            return result.avatar_url;
+        };
+
+        const removePhoto = () => {
+            const confirmacao = confirm('Tem certeza que deseja remover a foto?');
+
+            if (!confirmacao) {
+                return;
+            }
+
+            fetch('../script/atualizar-avatar.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                },
+                body: 'clear=1',
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Nao foi possivel remover a foto.');
+                    }
+
+                    return response.json();
+                })
+                .then(() => {
+                    setPhoto(defaultPhoto);
+                })
+                .catch((error) => {
+                    console.error('Erro ao remover foto:', error);
+                    alert('Erro ao remover a foto.');
+                });
+        };
+
+        const deleteAccount = async () => {
+            const confirmacao = confirm('Tem certeza que deseja deletar sua conta? Esta ação nao pode ser desfeita.');
+
+            if (!confirmacao) {
+                return;
+            }
+
+            try {
+                const response = await fetch('../script/excluir-conta.php', {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    alert('Nao foi possivel deletar a conta.');
+                    return;
+                }
+
+                alert('Conta deletada com sucesso!');
+                window.location.href = '../index.html';
+            } catch (error) {
+                console.error('Erro ao deletar conta:', error);
+                alert('Erro ao deletar a conta.');
+            }
+        };
+
+        const logout = async () => {
+            try {
+                const response = await fetch('../script/logout.php', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    alert(result.message || 'Nao foi possivel sair.');
+                    return;
+                }
+
+                window.location.href = result.redirect || '../html/login.html';
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+                alert('Erro ao sair da conta.');
+            }
+        };
+
+        const showSaveFeedback = (message, isError = false) => {
+            if (!profileCard) {
+                return;
+            }
+
+            let feedback = profileCard.querySelector('.save-feedback');
+
+            if (!feedback) {
+                feedback = document.createElement('p');
+                feedback.className = 'save-feedback';
+                profileCard.appendChild(feedback);
+            }
+
+            feedback.textContent = message;
+            feedback.classList.toggle('is-error', isError);
+            feedback.classList.toggle('is-success', !isError);
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('../script/gerenciamento-pfp.php');
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const perfil = await response.json();
+
+                const nomeInput = document.getElementById('nome');
+                const emailInput = document.getElementById('email');
+                const telefoneInput = document.getElementById('telefone');
+
+                currentUserId = Number(perfil.id_usuario || 0);
+
+                if (nomeInput) {
+                    nomeInput.value = perfil.nome_completo ?? '';
+                }
+
+                if (emailInput) {
+                    emailInput.value = perfil.email ?? '';
+                }
+
+                if (telefoneInput) {
+                    telefoneInput.value = perfil.telefone ?? '';
+                }
+
+                setPhoto(perfil.avatar_url || defaultPhoto);
+            } catch (error) {
+                console.error('Erro ao carregar perfil:', error);
+                setPhoto(defaultPhoto);
+            }
+
+            if (editPhotoBtn) {
+                editPhotoBtn.addEventListener('click', openPhotoPicker);
+            }
+
+            if (photoInput) {
+                photoInput.addEventListener('change', (event) => {
+                    const file = event.target.files?.[0];
+
+                    if (!file) {
+                        return;
+                    }
+
+                    const previousAvatarUrl = currentAvatarUrl;
+
+                    const reader = new FileReader();
+
+                    reader.onload = (loadEvent) => {
+                        const result = loadEvent.target?.result;
+
+                        if (typeof result === 'string') {
+                            setPhoto(result);
+                        }
+                    };
+
+                    reader.readAsDataURL(file);
+
+                    uploadPhoto(file)
+                        .then((avatarUrl) => {
+                            if (avatarUrl) {
+                                setPhoto(avatarUrl);
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Erro ao salvar avatar:', error);
+                            alert('Nao foi possivel salvar a imagem.');
+                            setPhoto(previousAvatarUrl || defaultPhoto);
+                        });
+                });
+            }
+
+            if (removePhotoBtn) {
+                removePhotoBtn.addEventListener('click', removePhoto);
+            }
+
+            if (deleteAccountBtn) {
+                deleteAccountBtn.addEventListener('click', deleteAccount);
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+            }
+
+            if (profileForm) {
+                profileForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const nomeInput = document.getElementById('nome');
+                    const emailInput = document.getElementById('email');
+                    const telefoneInput = document.getElementById('telefone');
+
+                    const formData = new URLSearchParams();
+                    formData.set('id_usuario', String(currentUserId || 0));
+                    formData.set('nome_completo', nomeInput ? nomeInput.value.trim() : '');
+                    formData.set('email', emailInput ? emailInput.value.trim() : '');
+                    formData.set('telefone', telefoneInput ? telefoneInput.value.trim() : '');
+
+                    try {
+                        const response = await fetch('../script/atualizacao-dados.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                            },
+                            body: formData.toString(),
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok || !result.success) {
+                            throw new Error(result.message || 'Nao foi possivel salvar as alteracoes.');
+                        }
+
+                        const usuario = result.usuario || {};
+
+                        if (nomeInput && typeof usuario.nome_completo === 'string') {
+                            nomeInput.value = usuario.nome_completo;
+                        }
+
+                        if (emailInput && typeof usuario.email === 'string') {
+                            emailInput.value = usuario.email;
+                        }
+
+                        if (telefoneInput && typeof usuario.telefone === 'string') {
+                            telefoneInput.value = usuario.telefone;
+                        }
+
+                        showSaveFeedback('Alterações salvas com sucesso!');
+                    } catch (error) {
+                        console.error('Erro ao salvar perfil:', error);
+                        showSaveFeedback(error.message || 'Erro ao salvar as alterações.', true);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

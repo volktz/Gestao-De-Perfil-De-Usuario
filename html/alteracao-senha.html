@@ -16,7 +16,7 @@
                 <h1 class="profile-title" id="alteracao-senha-title">Alterar Senha de Acesso</h1>
             </header>
 
-            <form method="post" action="../script/alteracao-senha.php">
+            <form method="post" action="../script/alteracao-senha.php" id="changePasswordForm">
                 <div class="form-group">
                     <label for="current-password">Senha Atual</label>
                     <input type="password" id="current-password" name="current-password" placeholder="Digite sua senha atual">
@@ -31,6 +31,7 @@
                     <p id="password-error" style="color: #e74c3c; font-size: 0.9em; margin-top: 5px; display: none;">As senhas não coincidem</p>
                 </div>
                 <button type="submit" class="btn-salvar" disabled>Salvar Alterações</button>
+                <p id="password-save-feedback" class="save-feedback" style="display:none;"></p>
             </form>
         </section>
     </main>
@@ -40,6 +41,8 @@
         const confirmPasswordInput = document.getElementById('confirm-new-password');
         const submitButton = document.querySelector('.btn-salvar');
         const passwordError = document.getElementById('password-error');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        const saveFeedback = document.getElementById('password-save-feedback');
 
         function validatePasswords() {
             const newPassword = newPasswordInput.value;
@@ -60,6 +63,51 @@
 
         newPasswordInput.addEventListener('input', validatePasswords);
         confirmPasswordInput.addEventListener('input', validatePasswords);
+
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const formData = new URLSearchParams();
+                formData.set('current-password', document.getElementById('current-password').value);
+                formData.set('new-password', newPasswordInput.value);
+                formData.set('confirm-new-password', confirmPasswordInput.value);
+
+                try {
+                    const response = await fetch('../script/alteracao-senha.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        },
+                        body: formData.toString(),
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Nao foi possivel alterar a senha.');
+                    }
+
+                    if (saveFeedback) {
+                        saveFeedback.textContent = result.message || 'Senha alterada com sucesso!';
+                        saveFeedback.style.display = 'block';
+                        saveFeedback.classList.remove('is-error');
+                        saveFeedback.classList.add('is-success');
+                    }
+
+                    changePasswordForm.reset();
+                    submitButton.disabled = true;
+                    passwordError.style.display = 'none';
+                } catch (error) {
+                    if (saveFeedback) {
+                        saveFeedback.textContent = error.message || 'Erro ao alterar a senha.';
+                        saveFeedback.style.display = 'block';
+                        saveFeedback.classList.remove('is-success');
+                        saveFeedback.classList.add('is-error');
+                    }
+                }
+            });
+        }
     </script>
 </body>
 
