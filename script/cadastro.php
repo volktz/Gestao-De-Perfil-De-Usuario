@@ -1,18 +1,20 @@
 <?php
 
-require_once __DIR__ . '/audit.php';
+// 1. Permite apenas requisições POST para evitar acesso direto via URL.
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../index.html');
     exit;
 }
 
-$nomeCompleto = isset($_POST['nome_completo']) ? trim($_POST['nome_completo']) : '';
-$email = isset($_POST['email']) ? trim($_POST['email']) : '';
-$telefone = isset($_POST['telefone']) ? trim($_POST['telefone']) : '';
-$senha = isset($_POST['senha']) ? trim($_POST['senha']) : '';
-$confirmarSenha = isset($_POST['confirmar_senha']) ? trim($_POST['confirmar_senha']) : '';
-
+require_once __DIR__ . '/audit.php';
 require_once __DIR__ . '/config.php';
+
+// 2. Lê os dados do formulário e remove espaços em branco extras.
+$nomeCompleto = trim($_POST['nome_completo'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$telefone = trim($_POST['telefone'] ?? '');
+$senha = trim($_POST['senha'] ?? '');
+$confirmarSenha = trim($_POST['confirmar_senha'] ?? '');
 
 function redirectWithError(string $message): void
 {
@@ -25,6 +27,7 @@ function isValidPassword(string $senha): bool
     return (bool) preg_match('/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#!$%]).{8,}$/', $senha);
 }
 
+// 3. Validação dos dados antes de tocar no banco.
 if ($nomeCompleto === '' || $email === '' || $senha === '' || $confirmarSenha === '') {
     redirectWithError('Preencha nome, e-mail e senha.');
 }
@@ -41,56 +44,48 @@ if (!isValidPassword($senha)) {
     redirectWithError('A senha deve ter pelo menos 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial (@, #, !, $, %).');
 }
 
-try {
-    $pdo = getPdo();
-} catch (PDOException $e) {
-    throw new \PDOException($e->getMessage(), (int) $e->getCode());
-}
+// 4. Conecta ao banco e inicia transação para manter consistência.
+$pdo = getPdo();
+$pdo->beginTransaction();
 
 try {
-    $pdo->beginTransaction();
+    // 5. Verifica se o e-mail já está cadastrado.
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM usuario WHERE email = :email');
+    $stmt->execute([':email' => $email]);
 
-    $checkEmailSql = 'SELECT COUNT(*) FROM usuario WHERE email = :email';
-    $stmtCheckEmail = $pdo->prepare($checkEmailSql);
-    $stmtCheckEmail->execute([':email' => $email]);
-
-    if ((int) $stmtCheckEmail->fetchColumn() > 0) {
+    if ((int) $stmt->fetchColumn() > 0) {
         redirectWithError('O e-mail informado já está em uso.');
     }
 
-    $sql = "INSERT INTO usuario
-            (nome_completo, email, telefone, senha_hash, criado_em) 
-            VALUES 
-            (:nome_completo, :email, :telefone, :senha, NOW())";
-
-    $stmt = $pdo->prepare($sql);
+    // 6. Insere o novo usuário com senha segura.
+    $stmt = $pdo->prepare(
+        'INSERT INTO usuario (nome_completo, email, telefone, senha_hash, criado_em)
+         VALUES (:nome_completo, :email, :telefone, :senha, NOW())'
+    );
     $stmt->execute([
-        ':nome_completo' => (string) $nomeCompleto,
-        ':email' => (string) $email,
-        ':telefone' => (string) $telefone,
-        ':senha' => (string) password_hash($senha, PASSWORD_DEFAULT),
+        ':nome_completo' => $nomeCompleto,
+        ':email' => $email,
+        ':telefone' => $telefone,
+        ':senha' => password_hash($senha, PASSWORD_DEFAULT),
     ]);
 
     $idUsuario = (int) $pdo->lastInsertId();
 
-    $sqlPreferencia = "INSERT INTO preferencia_usuario (id_usuario)
-            VALUES (:id_usuario)";
-    $stmtPreferencia = $pdo->prepare($sqlPreferencia);
-    $stmtPreferencia->execute([
-        ':id_usuario' => $idUsuario,
-    ]);
+    // 7. Cria a preferência padrão do usuário.
+    $stmt = $pdo->prepare('INSERT INTO preferencia_usuario (id_usuario) VALUES (:id_usuario)');
+    $stmt->execute([':id_usuario' => $idUsuario]);
 
+    // 8. Registra auditoria e confirma a transação.
     registrarAuditoria($pdo, $idUsuario, 'cadastro');
-
     $pdo->commit();
-} catch (\Throwable $e) {
+} catch (Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-
     throw $e;
 }
 
+// 9. Redireciona o usuário para login após cadastro bem-sucedido.
 header('Location: ../html/login.html');
 exit;
 
