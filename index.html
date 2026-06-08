@@ -4,63 +4,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil de Usuário</title>
+    <title>Cadastro de Usuário</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <main class="page-shell">
-        <section class="profile-card" aria-labelledby="perfil-title">
+        <section class="profile-card cadastro-card" aria-labelledby="cadastro-title">
             <header class="profile-header">
-                <button class="btn-voltar" type="button" aria-label="Voltar">←</button>
-                <h1 class="profile-title" id="perfil-title">Meu Perfil</h1>
+                <div>
+                    <p class="section-kicker">Novo acesso</p>
+                    <h1 class="profile-title" id="cadastro-title">Criar conta</h1>
+                </div>
             </header>
 
-            <div class="profile-photo-container">
-                <img src="../proto/img/image.png" alt="Foto de Perfil" class="profile-photo">
-                <button class="edit-photo-btn" type="button" aria-label="Editar foto">✏</button>
-            </div>
+            <p class="cadastro-intro">
+                Preencha os dados abaixo para criar um novo cadastro e começar a usar o sistema.
+            </p>
 
-            <p class="remove-photo-text">Remover Foto Atual</p>
-
-            <form class="profile-form" action="#" method="post">
+            <form class="profile-form cadastro-form" action="html/gestao-de-perfil.html" method="get" onsubmit="return irParaGestao(event)">
                 <div class="form-group">
-                    <label for="nome">Nome Completo</label>
-                    <input type="text" id="nome" name="nome" value="Paulo H." placeholder="Digite seu nome completo">
+                    <label for="nome-completo">Nome completo</label>
+                    <input type="text" id="nome-completo" name="nome_completo" placeholder="Digite seu nome completo" required>
                 </div>
 
                 <div class="form-group">
                     <label for="email">E-mail</label>
-                    <input type="email" id="email" name="email" value="paulo.h@empresa.com" placeholder="Digite seu e-mail" readonly>
+                    <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
                 </div>
+
+                <!-- Campo 'usuario' removido conforme solicitado -->
 
                 <div class="form-group">
                     <label for="telefone">Telefone</label>
-                    <input type="tel" id="telefone" name="telefone" value="(11) 98765-4321" placeholder="Digite seu telefone">
+                    <input type="tel" id="telefone" name="telefone" placeholder="Digite seu telefone">
                 </div>
 
-                <div class="options-container" aria-label="Opções do perfil" href="/">
-                    <a class="option-btn" href="./html/alteracao-senha.html">
-                        <div class="option-content">
-                            <span class="option-title">Alterar Senha de Acesso</span>
-                        </div>
-                        <span class="arrow">&gt;</span>
-                    </a>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="senha">Senha</label>
+                        <input type="password" id="senha" name="senha" placeholder="Crie uma senha" required>
+                    </div>
 
-                    <a class="option-btn" action="./script/preferencia/busca-preferencia.php" href="./html/preferencias-notificacoes.html">
-                        <div class="option-content">
-                            <span class="option-title">Preferências e Notificações</span>
-                            <p class="testezin">Gerenciar e-mails e alertas</p>
-                        </div>
-                        <span class="arrow">&gt;</span>
-                    </a>
+                    <div class="form-group">
+                        <label for="confirmar-senha">Confirmar senha</label>
+                        <input type="password" id="confirmar-senha" name="confirmar_senha" placeholder="Repita a senha" required>
+                        <p id="password-error" class="field-error" aria-live="polite" hidden>As senhas não coincidem.</p>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn-salvar">Salvar Alterações</button>
+                <label class="terms-check">
+                    <input type="checkbox" name="termos" required>
+                    <span>Li e concordo com os termos de uso e a política de privacidade.</span>
+                </label>
+
+                <button type="submit" class="btn-salvar">Criar cadastro</button>
             </form>
         </section>
     </main>
 
+    <script>
+        function irParaGestao(event) {
+            event.preventDefault();
+
+            const senha = document.getElementById('senha').value;
+            const confirmarSenha = document.getElementById('confirmar-senha').value;
+            const passwordError = document.getElementById('password-error');
+
+            if (senha !== confirmarSenha) {
+                passwordError.hidden = false;
+                document.getElementById('confirmar-senha').focus();
+                return false;
+            }
+
+            passwordError.hidden = true;
+            window.location.href = 'html/gestao-de-perfil.html';
+            return false;
+        }
+    </script>
 </body>
 
 </html>

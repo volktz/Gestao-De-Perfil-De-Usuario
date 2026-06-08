@@ -68,7 +68,7 @@ try {
         ':pesquisa_opiniao' => $pesquisa_opiniao
     ]);
 
-    echo "<script>alert('Configurações salvas com sucesso!'); window.location.href = '../../index.html';</script>";
+    echo "<script>alert('Configurações salvas com sucesso!'); window.location.href = '../../html/gestao-de-perfil.html';</script>";
 
 } catch (PDOException $e) {
     // Caso ocorra erro (ex: id_usuario não existe na tabela pai)

@@ -36,14 +36,14 @@ $pdo = new PDO($dsn, $user, $pass);
 //   if($login == "" || $login == null){
 //     echo"<script language="javascript" type="text/javascript">
 //     alert("O campo login deve ser preenchido");window.location.href="
-//     cadastro.html";</script>";
+//     ../index.html";</script>";
 
 //     }else{
 //       if($logarray == $login){
 
 //         echo"<script language="javascript" type="text/javascript">
 //         alert("Esse login já existe");window.location.href="
-//         cadastro.html";</script>";
+//         ../index.html";</script>";
 //         die();
 
 //       }else{
@@ -57,7 +57,7 @@ $pdo = new PDO($dsn, $user, $pass);
 //         }else{
 //           echo"<script language="javascript" type="text/javascript">
 //           alert("Não foi possível cadastrar esse usuário");window.location
-//           .href="cadastro.html"</script>";
+//           .href="../index.html"</script>";
 //         }
 //       }
 //     }
