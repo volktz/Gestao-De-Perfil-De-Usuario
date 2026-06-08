@@ -1,47 +1,30 @@
-<?php 
+<?php
 
 require_once __DIR__ . '/../auth.php';
-
-$host = 'localhost';
-$db   = 'perfil_de_usuario';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
-
 require_once __DIR__ . '/../config.php';
+
+header('Content-Type: application/json; charset=utf-8');
 
 try {
     $pdo = getPdo();
-} catch (PDOException $e) {
-    // Em produção, salve o erro em um log em vez de dar echo
-    throw new \PDOException($e->getMessage(), (int)$e->getCode());
-}
+    $idUsuario = obterIdUsuarioAtual($pdo);
 
-$id_usuario_logado = obterIdUsuarioAtual($pdo);
+    if ($idUsuario <= 0) {
+        echo json_encode([]);
+        exit;
+    }
 
-if ($id_usuario_logado <= 0) {
-    $preferencias = [];
-    header('Content-Type: application/json; charset=utf-8');
+    $stmt = $pdo->prepare(
+        'SELECT alertas_sistema, emails_seguranca, emails_marketing, pesquisa_opiniao
+           FROM preferencia_usuario
+          WHERE id_usuario = :id_usuario'
+    );
+    $stmt->execute([':id_usuario' => $idUsuario]);
+    $preferencias = $stmt->fetch() ?: [];
+
     echo json_encode($preferencias);
-    exit;
+} catch (Throwable $e) {
+    echo json_encode([]);
 }
-
-$querySELECT = "SELECT alertas_sistema, emails_seguranca, emails_marketing, pesquisa_opiniao
-                FROM preferencia_usuario
-                WHERE id_usuario = :id_usuario";
-
-$stmt = $pdo->prepare($querySELECT);
-$stmt->execute([
-    ':id_usuario' => $id_usuario_logado,
-]);
-
-$preferencias = $stmt->fetch();
-
-if ($preferencias === false) {
-    $preferencias = [];
-}
-
-header('Content-Type: application/json; charset=utf-8');
-echo json_encode($preferencias);
 
 ?>

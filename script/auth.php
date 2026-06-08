@@ -27,13 +27,11 @@ function obterIdUsuarioAtual(PDO $pdo): int
     }
 
     $idUsuario = (int) $_SESSION['id_usuario'];
-    $stmtUsuario = $pdo->prepare('SELECT atualizado_em FROM usuario WHERE id_usuario = :id_usuario LIMIT 1');
-    $stmtUsuario->execute([':id_usuario' => $idUsuario]);
-    $atualizadoEm = $stmtUsuario->fetchColumn();
+    $stmt = $pdo->prepare('SELECT atualizado_em FROM usuario WHERE id_usuario = :id_usuario LIMIT 1');
+    $stmt->execute([':id_usuario' => $idUsuario]);
+    $atualizadoEm = $stmt->fetchColumn();
 
-    $senhaAtualizadaEm = $_SESSION['senha_atualizada_em'] ?? null;
-
-    if ($atualizadoEm !== $senhaAtualizadaEm) {
+    if ($atualizadoEm !== ($_SESSION['senha_atualizada_em'] ?? null)) {
         invalidarSessao();
         return 0;
     }

@@ -1,28 +1,24 @@
 <?php
+
+require_once __DIR__ . '/audit.php';
+require_once __DIR__ . '/config.php';
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../html/login.html');
     exit;
 }
 
 session_start();
-
-require_once __DIR__ . '/audit.php';
-
-$email = isset($_POST['email']) ? trim($_POST['email']) : '';
-$senha = isset($_POST['senha']) ? trim($_POST['senha']) : '';
-
 header('Content-Type: application/json; charset=utf-8');
+
+$email = trim($_POST['email'] ?? '');
+$senha = trim($_POST['senha'] ?? '');
 
 if ($email === '' || $senha === '') {
     http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Preencha e-mail e senha.'
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Preencha e-mail e senha.']);
     exit;
 }
-
-require_once __DIR__ . '/config.php';
 
 try {
     $pdo = getPdo();
@@ -32,10 +28,7 @@ try {
 
     if (!$usuario || !password_verify($senha, $usuario['senha_hash'])) {
         http_response_code(401);
-        echo json_encode([
-            'success' => false,
-            'message' => 'E-mail ou senha inválidos.'
-        ]);
+        echo json_encode(['success' => false, 'message' => 'E-mail ou senha inválidos.']);
         exit;
     }
 
@@ -47,17 +40,10 @@ try {
 
     registrarAuditoria($pdo, (int) $usuario['id_usuario'], 'login');
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'Login realizado com sucesso.',
-        'redirect' => '../html/gestao-de-perfil.html'
-    ]);
+    echo json_encode(['success' => true, 'message' => 'Login realizado com sucesso.', 'redirect' => '../html/gestao-de-perfil.html']);
     exit;
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Erro ao autenticar. Tente novamente.'
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Erro ao autenticar. Tente novamente.']);
     exit;
 }

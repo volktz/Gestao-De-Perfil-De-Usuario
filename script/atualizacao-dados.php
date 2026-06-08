@@ -2,93 +2,72 @@
 
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/audit.php';
+require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+function jsonError(string $message, int $code = 400): void
+{
+    http_response_code($code);
+    echo json_encode(['success' => false, 'message' => $message]);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-	http_response_code(405);
-	echo json_encode(['success' => false, 'message' => 'Metodo nao permitido.']);
-	exit;
+    jsonError('Método não permitido.', 405);
 }
 
-require_once __DIR__ . '/config.php';
-
 try {
-	$pdo = getPdo();
+    $pdo = getPdo();
 } catch (PDOException $e) {
-	http_response_code(500);
-	echo json_encode(['success' => false, 'message' => 'Erro de conexao com o banco.']);
-	exit;
+    jsonError('Erro de conexão com o banco.', 500);
 }
 
-$nomeCompleto = isset($_POST['nome_completo']) ? trim($_POST['nome_completo']) : '';
-$email = isset($_POST['email']) ? trim($_POST['email']) : '';
-$telefone = isset($_POST['telefone']) ? trim($_POST['telefone']) : '';
+$nomeCompleto = trim($_POST['nome_completo'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$telefone = trim($_POST['telefone'] ?? '');
+
+if ($nomeCompleto === '' || $email === '') {
+    jsonError('Preencha nome e email.');
+}
 
 try {
-	$idUsuario = obterIdUsuarioAtual($pdo);
+    $idUsuario = obterIdUsuarioAtual($pdo);
+    if ($idUsuario <= 0) {
+        jsonError('Usuário não autenticado.', 401);
+    }
 
-	if ($idUsuario <= 0) {
-		http_response_code(401);
-		echo json_encode(['success' => false, 'message' => 'Usuario nao autenticado.']);
-		exit;
-	}
+    $stmt = $pdo->prepare(
+        'UPDATE usuario
+            SET nome_completo = :nome_completo,
+                email = :email,
+                telefone = :telefone,
+                atualizado_em = NOW()
+          WHERE id_usuario = :id_usuario'
+    );
 
-	if ($nomeCompleto === '' || $email === '') {
-		http_response_code(400);
-		echo json_encode(['success' => false, 'message' => 'Preencha nome e email.']);
-		exit;
-	}
+    $stmt->execute([
+        ':nome_completo' => $nomeCompleto,
+        ':email' => $email,
+        ':telefone' => $telefone,
+        ':id_usuario' => $idUsuario,
+    ]);
 
-	$sql = "UPDATE usuario
-			SET nome_completo = :nome_completo,
-				email = :email,
-				telefone = :telefone,
-				atualizado_em = NOW()
-			WHERE id_usuario = :id_usuario";
+    registrarAuditoria($pdo, $idUsuario, 'atualizacao_dados');
 
-	$stmt = $pdo->prepare($sql);
-	$stmt->execute([
-		':nome_completo' => $nomeCompleto,
-		':email' => $email,
-		':telefone' => $telefone,
-		':id_usuario' => $idUsuario,
-	]);
-
-	registrarAuditoria($pdo, $idUsuario, 'atualizacao_dados');
-
-	echo json_encode([
-		'success' => true,
-		'usuario' => [
-			'id_usuario' => $idUsuario,
-			'nome_completo' => $nomeCompleto,
-			'email' => $email,
-			'telefone' => $telefone,
-		],
-	]);
-} catch (\PDOException $e) {
-	http_response_code(500);
-
-	// Log error to file for debugging
-	$logDir = __DIR__ . '/logs';
-	if (!is_dir($logDir)) {
-		@mkdir($logDir, 0755, true);
-	}
-
-	$logFile = $logDir . '/errors.log';
-	$logEntry = sprintf("[%s] %s in %s on line %d\nSQLSTATE: %s\n\n", date('c'), $e->getMessage(), $e->getFile(), $e->getLine(), $e->getCode());
-	@file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
-
-	// Handle duplicate entry (unique constraint) gracefully
-	$message = 'Erro ao salvar os dados.';
-	$code = (string) $e->getCode();
-
-	if ($code === '23000' || stripos($e->getMessage(), 'Duplicate') !== false) {
-		$message = 'O e-mail informado já está em uso.';
-	} else {
-		// In non-prod, expose message to help debugging (safe because this is local dev)
-		$message = $e->getMessage();
-	}
-
-	echo json_encode(['success' => false, 'message' => $message]);
+    echo json_encode([
+        'success' => true,
+        'usuario' => [
+            'id_usuario' => $idUsuario,
+            'nome_completo' => $nomeCompleto,
+            'email' => $email,
+            'telefone' => $telefone,
+        ],
+    ]);
+} catch (PDOException $e) {
+    $message = 'Erro ao salvar os dados.';
+    if ((string) $e->getCode() === '23000' || stripos($e->getMessage(), 'Duplicate') !== false) {
+        $message = 'O e-mail informado já está em uso.';
+    }
+    jsonError($message, 500);
 }
